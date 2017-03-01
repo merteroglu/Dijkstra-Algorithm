@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1488366214 source:d:\sources\codeblocks\prolab2dijkstra\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
