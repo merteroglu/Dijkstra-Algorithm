@@ -81,3 +81,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+*.depend
+Prolab2Dijkstra.layout
