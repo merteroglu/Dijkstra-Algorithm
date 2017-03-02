@@ -6,9 +6,16 @@
 #define N 23
 #define MAX 23
 
-int sehirKoduBul(char sehirKoduDizi[][50],char *sehirAdi,int maxSehir){
+FILE *sehirKodlari,*sehirMesafeler;
+char buff[255];
+int toplamSehir;
 
-    for(int i=0;i<maxSehir;i++){
+char sehirKodlariDizisi[50][50];
+int komsulukDizisi[50][50];
+
+int sehirKoduBul(char sehirKoduDizi[][50],char *sehirAdi){
+
+    for(int i=1;i<toplamSehir+1;i++){
         if(!strcmp(sehirKoduDizi[i],sehirAdi)){
             return i;
         }
@@ -66,31 +73,30 @@ int dijsktra(int maliyetDizisi[][N],int merkezSehir,int hedefSehir,char sehirDiz
     return mesafe[hedefSehir];
 }
 
-void yoluYazdir(char path[50],char dizi[50][50]){
+void yoluYazdir(char yol[50],char sehirKodlari[50][50]){
 
     for(int i = 0;i<50;i++){
-        if(path[i] == '\0'){
+        if(yol[i] == '\0'){
             break;
         }
-        printf("%s-",dizi[path[i]-65]);
+        printf("%s-",sehirKodlari[yol[i]-65]);
     }
 
 }
 
-void dijkstra2(int G[MAX][MAX],int n,int startnode,char dizi[50][50])
+void dijkstra2(,int startnode)
 {
 
     int cost[MAX][MAX],distance[MAX],pred[MAX];
     int visited[MAX],count,mindistance,nextnode,i,j;
-
+    int n = toplamSehir;
     for(i=1;i<n;i++)
         for(j=1;j<n;j++)
-            if(G[i][j]==0)
+            if(komsulukDizisi[i][j]==0)
                 cost[i][j]=INF;
             else
-                cost[i][j]=G[i][j];
+                cost[i][j]=komsulukDizisi[i][j];
 
-    //initialize pred[],distance[] and visited[]
     for(i=1;i<n;i++)
     {
         distance[i]=cost[startnode][i];
@@ -114,7 +120,6 @@ void dijkstra2(int G[MAX][MAX],int n,int startnode,char dizi[50][50])
                 nextnode=i;
             }
 
-            //check if a better path exists through nextnode
             visited[nextnode]=1;
             for(i=1;i<n;i++)
                 if(!visited[i])
@@ -126,66 +131,69 @@ void dijkstra2(int G[MAX][MAX],int n,int startnode,char dizi[50][50])
         count++;
     }
 
-    //print the path and distance of each node
     for(i=1;i<n;i++)
         if(i!=startnode)
         {
-            printf("\n%s 'e uzakligi = %d",dizi[i],distance[i]);
-            printf("\nGidilen Yol : %s",dizi[i]);
+            printf("\n%s 'e uzakligi = %d",sehirKodlariDizisi[i],distance[i]);
+            printf("\nGidilen Yol : %s",sehirKodlariDizisi[i]);
 
             j=i;
             do
             {
                 j=pred[j];
-                printf("<-%s",dizi[j]);
+                printf("<-%s",sehirKodlariDizisi[j]);
             }while(j!=startnode);
 
         }
 }
 
-int main(){
-
-     char buff[255];
-
-    FILE *sehirKodlari,*sehirMesafeler;
+int sehirKodlariDosyasiniAc(){
 
     sehirKodlari = fopen("\sehir kod.txt","r");
 
     if(sehirKodlari == NULL){
         printf("Sehir kodlari dosyasi bulunamadi!\n");
+        return -1;
     }
 
 
     char * kod;
     char * sehiradi;
 
-    char dizi[50][50];
+
 
     while( (fscanf(sehirKodlari, "%s", buff)) != EOF){
 
       sehiradi = strtok(buff,"-");
       kod = strtok(NULL,"-");
       int i = atoi(kod);
-      strcpy(dizi[i],sehiradi);
+      strcpy(sehirKodlariDizisi[i],sehiradi);
       printf("%s - %s\n",kod,sehiradi);
     }
 
-    int toplamSehir = atoi(kod) + 1;
-        ///printf("Toplam sehir sayisi : %d\n",toplamSehir);
+     toplamSehir = atoi(kod);
 
     fclose(sehirKodlari);
+    return 1;
+}
 
+int mesafelerDosyasiniAc(){
 
     sehirMesafeler = fopen("\sehir mesafe.txt","r");
+
+    if(sehirMesafeler == NULL){
+        printf("Sehir Mesafe dosyasi acilamadi!");
+        return -1;
+    }
+
     char * sehir1;
     char * sehir2;
     char * mesafe;
 
-    int maliyetDizi[toplamSehir][toplamSehir];
 
      for(int i = 0;i<toplamSehir;i++){
         for(int j = 0;j<toplamSehir;j++){
-        maliyetDizi[i][j] = INF;
+        komsulukDizisi[i][j] = INF;
         }
     }
 
@@ -195,19 +203,29 @@ int main(){
         sehir2 = strtok(NULL,"-");
         mesafe = strtok(NULL,"-");
 
-        int x = sehirKoduBul(dizi,sehir1,toplamSehir);
-        int y = sehirKoduBul(dizi,sehir2,toplamSehir);
+        int x = sehirKoduBul(sehirKodlariDizisi,sehir1);
+        int y = sehirKoduBul(sehirKodlariDizisi,sehir2);
         int w = atoi(mesafe);
-        maliyetDizi [x][y] = maliyetDizi[y][x] = w;
-        //printf("%s , %s , %s\n",sehir1,sehir2,mesafe);
-
+        komsulukDizisi[x][y] = komsulukDizisi[y][x] = w;
     }
+    fclose(sehirMesafeler);
+    return 1;
+}
 
-   // printf("%d - %d - %d\n",1,3,maliyetDizi[1][3]);
+int main(){
+
+   if(sehirKodlariDosyasiniAc() == -1){
+        return;
+   }
+
+   if(mesafelerDosyasiniAc() == -1){
+        return;
+   }
+
 
 
     //int sonuc = dijsktra(maliyetDizi,1,17,dizi);
     //printf("\n%d",sonuc);
-    dijkstra2(maliyetDizi,23,1,dizi);
+    dijkstra2(1);
     return 0;
 }
